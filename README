@@ -1,0 +1,28 @@
+Arduino STM32
+=============
+
+This repository contains modifications to main Arduino tree that enables support of STM32 Cortex-M3 based targets.
+
+Revision info
+=============
+
+v 0.0 (090823)
+==============
+STM32:
+-----
+Tested with Olimex STM32_P103 board
+Arm build envirenment is Codesourcery light, tested on Linux, Fedora 10
+Arduino sketches are built to elf and hex files that can be flashed to a stm32 target with OpenOcd Jtag.
+Basic Arduino/Wiring functions supported are:  
+	delay, millis, micros, delayMicroseconds
+	pinMode, digitalWrite, digitalRead
+	Hardware serial with 3 serial ports Serial1==Serial, Serial2 and Serial3
+	analogRead
+	
+Arduino IDE
+-----------
+Sizer
+	Show amount of used RAM
+SerialMonitor
+	Add log file to serial monitor window
+
