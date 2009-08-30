@@ -23,7 +23,7 @@
 */
 
 #include "wiring_private.h"
-#include "pins_arduino.h"
+#include "pins_stm32.h"
 #include "stm32f10x_adc.h"
 
 #define ADC_SR_EOC  (1<<1)
@@ -95,25 +95,31 @@ int analogRead(uint8_t pin)
 // to digital output.
 void analogWrite(uint8_t pin, int val)
 {
+	TIM_TypeDef * TIM;
+	uint8_t chn;
+
+	TIM = digitalPinToTimer(pin);
+	chn = digital_pin_to_timer_chn[pin];
+	
 	// We need to make sure the PWM output is enabled for those pins
 	// that support it, as we turn it off when digitally reading or
 	// writing with them.  Also, make sure the pin is in output mode
 	// for consistenty with Wiring, which doesn't require a pinMode
 	// call for the analog output pins.
-	pinMode(pin, OUTPUT);
-	
-	if (digitalPinToTimer(pin) == TIMER1A) {
+
+	if (TIM != 0) {
+		pinMode(pin, ALTOUT_PP);	
 		// connect pwm to pin on timer 1, channel A
 
 		// set pwm duty
+		*((uint32_t *)(&TIM->CCR1)+(chn-1)) = val;
 
-	} else if (digitalPinToTimer(pin) == TIMER1B) {
-		// connect pwm to pin on timer 1, channel B
-
-		// set pwm duty
-
-	} else if (val < 128)
-		digitalWrite(pin, LOW);
-	else
-		digitalWrite(pin, HIGH);
+	} else
+	{
+		pinMode(pin, OUTPUT);	
+		if (val < 128)
+			digitalWrite(pin, LOW);
+		else
+			digitalWrite(pin, HIGH);
+	}
 }

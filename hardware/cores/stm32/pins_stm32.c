@@ -23,7 +23,7 @@
 */
 
 #include "wiring_private.h"
-#include "pins_arduino.h"
+#include "pins_stm32.h"
 
 // On the Arduino board, digital pins are also used
 // for the analog output (software PWM).  Analog input
@@ -196,6 +196,57 @@ const TIM_TypeDef * digital_pin_to_timer_PGM[] = {
 	TIM3,
 	TIM3, /* 8 - port C */
 	TIM3,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+};
+
+const uint8_t digital_pin_to_timer_chn[] = {
+	NOT_ON_TIMER, /* 0 - port A */
+	2,
+	3,
+	4,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	1,
+	2,
+	NOT_ON_TIMER, /* 8 - port A */
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	3, /* 0 - port B */
+	4,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	1,
+	2,
+	3, /* 8 - port B */
+	4,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER, /* 0 - port C */
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	NOT_ON_TIMER,
+	31, // FULL REMAP
+	32,
+	33, /* 8 - port C */
+	34,
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,
 	NOT_ON_TIMER,

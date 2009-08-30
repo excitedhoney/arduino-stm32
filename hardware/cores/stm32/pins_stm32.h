@@ -22,45 +22,36 @@
   $Id: wiring.h 249 2007-02-03 16:52:51Z mellis $
 */
 
-#ifndef Pins_Arduino_h
-#define Pins_Arduino_h
+#ifndef Pins_STM32_h
+#define Pins_STM32_h
 
-#include <avr/pgmspace.h>
 #include <stm32f10x_map.h>
 #include <stm32f10x_gpio.h>
 
 #define NOT_A_PIN 0
 #define NOT_A_PORT 0
-
 #define NOT_ON_TIMER 0
-#define NOT_ON_TIMER 0
-#define TIMER0A 1
-#define TIMER0B 2
-#define TIMER1A 3
-#define TIMER1B 4
-#define TIMER2  5
-#define TIMER2A 6
-#define TIMER2B 7
 
 extern GPIO_TypeDef * digital_pin_to_port_PGM[];
 extern uint8_t digital_pin_to_bitnumber[];
 
 extern const TIM_TypeDef * digital_pin_to_timer_PGM[];
+extern const uint8_t digital_pin_to_timer_chn[];
 
 extern const GPIO_TypeDef * analog_chn_to_port[];
-extern const char analog_chn_to_pin[];
+extern const uint8_t analog_chn_to_pin[];
 
 // Get the bit location within the hardware port of the given virtual pin.
 // This comes from the pins_*.c file for the active board configuration.
 // 
 // These perform slightly better as macros compared to inline functions
 //
-#define digitalPinToPort(P) ( pgm_read_byte( digital_pin_to_port_PGM + (P) ) )
-#define digitalPinToBit(P) ( pgm_read_byte( digital_pin_to_bitnumber + (P) ) )
-#define digitalPinToTimer(P) ( pgm_read_byte( digital_pin_to_timer_PGM + (P) ) )
-#define analogInPinToBit(P) (P)
-#define portOutputRegister(P) ( (volatile uint8_t *)( pgm_read_byte( port_to_output_PGM + (P))) )
-#define portInputRegister(P) ( (volatile uint8_t *)( pgm_read_byte( port_to_input_PGM + (P))) )
-#define portModeRegister(P) ( (volatile uint8_t *)( pgm_read_byte( port_to_mode_PGM + (P))) )
+#define digitalPinToPort(P) ( digital_pin_to_port_PGM[P] )
+#define digitalPinToBit(P) ( digital_pin_to_bitnumber[P] )
+#define digitalPinToTimer(P) ( digital_pin_to_timer_PGM[P] )
+//#define analogInPinToBit(P) (P)
+#define portOutputRegister(P) ( (volatile uint8_t *)( port_to_output_PGM[P]) )
+#define portInputRegister(P) ( (volatile uint8_t *)( port_to_input_PGM[P]) )
+#define portModeRegister(P) ( (volatile uint8_t *)( port_to_mode_PGM[P]) )
 
 #endif

@@ -41,6 +41,7 @@ extern "C"{
 #define INPUT 0x0
 #define OUTPUT 0x1
 #define ANALOG 0xFF
+#define ALTOUT_PP 0x09
 
 #define true 0x1
 #define false 0x0

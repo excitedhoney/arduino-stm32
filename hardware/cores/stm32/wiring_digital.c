@@ -23,7 +23,7 @@
 */
 
 #include "wiring_private.h"
-#include "pins_arduino.h"
+#include "pins_stm32.h"
 
 /* 
 Mode values and pin output configurations
