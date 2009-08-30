@@ -249,6 +249,7 @@ public class CompilerARM extends Compiler {
       baseCommandCompilerCPP.add("-I" + (String) includePaths.get(i));
     }
     
+    baseCommandCompilerCPP.add("-Wa,-ahls=" + objectName + ".lst");
     baseCommandCompilerCPP.add(sourceName);
     baseCommandCompilerCPP.add("-o"+ objectName);
     
