@@ -37,9 +37,12 @@ public class SerialMonitor extends JFrame implements MessageConsumer {
   private JLabel statusLabel;
   private int serialRate;
   private JButton logButton;
+  private JButton pauseResumeButton;
+  private JButton clearButton;
   private FileOutputStream logfile;
   private PrintStream log;
   final JFileChooser fc = new JFileChooser();
+  private boolean paused = false;
 
 
   public SerialMonitor(String port) {
@@ -123,36 +126,45 @@ public class SerialMonitor extends JFrame implements MessageConsumer {
       }});
     
     pane.add(serialRates, BorderLayout.EAST);
+    
+    JPanel buttonPane = new JPanel(new FlowLayout());
 
-    logButton = new JButton("Open log");
+    /* logButton is used to direct messages to a log file */
+    logButton = new JButton("Open logfile");
     logButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (log == null)
         {
-          try {
             if (fc.showSaveDialog(getContentPane())==JFileChooser.APPROVE_OPTION)
             {
               File file = fc.getSelectedFile();
-              logfile = new FileOutputStream(file.getPath());
-              log = new PrintStream( logfile );
-              statusLabel.setText("opening log file: "+file.getName());
-              logButton.setLabel("Close log");
+              openLogFile(file.getPath());
             }
-          } catch (Exception ex) {
-             statusLabel.setText(ex.getMessage());
-          }
         }
         else
         {
-          statusLabel.setText("closing log file");
-          log.close();
-          log = null;
-          logButton.setLabel("Open log");
+          closeLogFile();
         }
       }});
-
-    pane.add(logButton, BorderLayout.WEST);
+    buttonPane.add(logButton);
        
+    /* pauseResumeButton is used to pause the message flow */
+    pauseResumeButton = new JButton("Pause");
+    pauseResumeButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        togglePause();
+      }});
+    buttonPane.add(pauseResumeButton);
+
+    /* clearButton is used to clear the message window */
+    clearButton = new JButton("Clear");
+    clearButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        textArea.setText("");
+      }});
+    buttonPane.add(clearButton);
+
+    pane.add(buttonPane, BorderLayout.WEST);
     getContentPane().add(pane, BorderLayout.SOUTH);
 
     pack();
@@ -162,7 +174,37 @@ public class SerialMonitor extends JFrame implements MessageConsumer {
     if (serial != null)
       serial.write(s);
   }
-  
+
+  public void openLogFile(String filename) {
+    try {
+      logfile = new FileOutputStream(filename);
+      log = new PrintStream( logfile );
+      statusLabel.setText("opening log file: "+filename);
+      logButton.setLabel("Open logfile");
+    } catch (Exception e) {
+      statusLabel.setText(e.getMessage());
+    }
+  }
+
+  public void closeLogFile() {
+    statusLabel.setText("closing log file");
+    log.close();
+    log = null;
+    logButton.setLabel("Open logfile");
+  }
+
+  public void togglePause() {
+    paused = !paused;
+    if (paused)
+    {
+        pauseResumeButton.setLabel("Resume");
+    }
+    else
+    {
+        pauseResumeButton.setLabel("Pause");
+    }
+  }
+
   public void openSerialPort() {
     if (serial != null) return;
   
@@ -174,19 +216,27 @@ public class SerialMonitor extends JFrame implements MessageConsumer {
     } catch (SerialException e) {
       statusLabel.setText(e.getMessage());
     }
+    
+    if (paused) togglePause();
   }
   
   public void closeSerialPort() {
     if (serial != null) {
       statusLabel.setText("closing...");
-      textArea.setText("");
+      textArea.append("SERIAL PORT CLOSED");
+//      textArea.setText("");
       serial.dispose();
       serial = null;
       statusLabel.setText("");
     }
+    if (log != null)
+    {
+      closeLogFile();
+    }
   }
   
   public void message(final String s) {
+    if (paused) return;
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         textArea.append(s);
