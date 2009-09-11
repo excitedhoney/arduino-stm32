@@ -224,7 +224,7 @@ stm32.name=STM32 Arduino32
 
 stm32.upload.protocol=stk500
 stm32.upload.maximum_size=65536
-stm32.upload.speed=19200
+stm32.upload.speed=57600
 
 stm32.bootloader.low_fuses=0xe2
 stm32.bootloader.high_fuses=0xdd

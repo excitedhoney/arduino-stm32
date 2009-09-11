@@ -145,7 +145,9 @@ void init()
 		RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
 	
 	// Enable GPIO port clocks
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);
+    // Pin configurations and remappings
+    AFIO->MAPR = (AFIO->MAPR&~(7<<24))|(4<<24);
 	
 	// systick is used for millis() and delay()
 	SysTick->LOAD = (MCK/TCK)-1;

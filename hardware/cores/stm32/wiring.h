@@ -39,6 +39,8 @@ extern "C"{
 #define LOW  0x0
 
 #define INPUT 0x0
+#define INPUT_FLOAT 0x4
+#define INPUT_PUPDN 0x8
 #define OUTPUT 0x1
 #define ANALOG 0xFF
 #define ALTOUT_PP 0x09
