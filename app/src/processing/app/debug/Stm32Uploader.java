@@ -1,7 +1,7 @@
 /* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 
 /*
-  Stm32Uploader - uploader implementation using avrdude
+  Stm32Uploader - uploader implementation using stmdude
   Part of the Arduino project - http://www.arduino.cc/
 
   Copyright (c) 2004-05
@@ -52,25 +52,23 @@ public class Stm32Uploader extends Uploader  {
     if (uploadUsing.equals("bootloader")) {
       return uploadViaBootloader(buildPath, className);
     } else {
+    /* Only serial bootloader is currently supported */
+    /*
       Collection params = getProgrammerCommands(uploadUsing);
       params.add("-Uflash:w:" + buildPath + File.separator + className + ".hex:i");
-      return avrdude(params);
+      return stm32dude(params);
+    */
+    return false;
     }
   }
   
   private boolean uploadViaBootloader(String buildPath, String className)
   throws RunnerException {
     List commandDownloader = new ArrayList();
-    String protocol = Preferences.get("boards." + Preferences.get("board") + ".upload.protocol");
-    
-    // avrdude wants "stk500v1" to distinguish it from stk500v2
-    if (protocol.equals("stk500"))
-      protocol = "stk500v1";
-    commandDownloader.add("-c" + protocol);
     commandDownloader.add("-P" + (Base.isWindows() ? "\\\\.\\" : "") + Preferences.get("serial.port"));
     commandDownloader.add(
       "-b" + Preferences.getInteger("boards." + Preferences.get("board") + ".upload.speed"));
-    commandDownloader.add("-D"); // don't erase
+    commandDownloader.add("-e"); // erase
     commandDownloader.add("-Uflash:w:" + buildPath + File.separator + className + ".hex:i");
 
     if (Preferences.get("boards." + Preferences.get("board") + ".upload.disable_flushing") == null ||
@@ -78,7 +76,7 @@ public class Stm32Uploader extends Uploader  {
       flushSerialBuffer();
     }
 
-    return avrdude(commandDownloader);
+    return stm32dude(commandDownloader);
   }
   
   public boolean burnBootloader(String programmer) throws RunnerException {
@@ -110,48 +108,23 @@ public class Stm32Uploader extends Uploader  {
   
   protected boolean burnBootloader(Collection params)
   throws RunnerException {
-    List fuses = new ArrayList();
-    fuses.add("-e"); // erase the chip
-    fuses.add("-Ulock:w:" + Preferences.get("boards." + Preferences.get("board") + ".bootloader.unlock_bits") + ":m");
-    if (Preferences.get("boards." + Preferences.get("board") + ".bootloader.extended_fuses") != null)
-      fuses.add("-Uefuse:w:" + Preferences.get("boards." + Preferences.get("board") + ".bootloader.extended_fuses") + ":m");
-    fuses.add("-Uhfuse:w:" + Preferences.get("boards." + Preferences.get("board") + ".bootloader.high_fuses") + ":m");
-    fuses.add("-Ulfuse:w:" + Preferences.get("boards." + Preferences.get("board") + ".bootloader.low_fuses") + ":m");
+  /* We cannot burn bootloaders to STM32 chips */
 
-    if (!avrdude(params, fuses))
-      return false;
-
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {}
-      
-    List bootloader = new ArrayList();
-    bootloader.add("-Uflash:w:" + Base.getHardwarePath() + File.separator + "bootloaders" + File.separator +
-            Preferences.get("boards." + Preferences.get("board") + ".bootloader.path") +
-            File.separator + Preferences.get("boards." + Preferences.get("board") + ".bootloader.file") + ":i");
-    bootloader.add("-Ulock:w:" + Preferences.get("boards." + Preferences.get("board") + ".bootloader.lock_bits") + ":m");
-
-    return avrdude(params, bootloader);
+    return false;
   }
   
-  public boolean avrdude(Collection p1, Collection p2) throws RunnerException {
+  public boolean stm32dude(Collection p1, Collection p2) throws RunnerException {
     ArrayList p = new ArrayList(p1);
     p.addAll(p2);
-    return avrdude(p);
+    return stm32dude(p);
   }
   
-  public boolean avrdude(Collection params) throws RunnerException {
+  public boolean stm32dude(Collection params) throws RunnerException {
     List commandDownloader = new ArrayList();
-    commandDownloader.add("avrdude");
+    commandDownloader.add("stmdude");
 
-    // Point avrdude at its config file since it's in a non-standard location.
-    if (Base.isLinux()) {
-      // ???: is it better to have Linux users install avrdude themselves, in
-      // a way that it can find its own configuration file?
-      commandDownloader.add("-C" + Base.getHardwarePath() + "/tools/avrdude.conf");
-    } else {
-      commandDownloader.add("-C" + Base.getHardwarePath() + "/tools/avr/etc/avrdude.conf");
-    }
+    // Point stmdude at its config file since it's in a non-standard location.
+    /* stmdude has no configuration file */
 
     if (Preferences.getBoolean("upload.verbose")) {
       commandDownloader.add("-v");
@@ -162,10 +135,7 @@ public class Stm32Uploader extends Uploader  {
       commandDownloader.add("-q");
       commandDownloader.add("-q");
     }
-    // XXX: quick hack to chop the "atmega" off of "atmega8" and "atmega168",
-    // then shove an "m" at the beginning.  won't work for attiny's, etc.
-    commandDownloader.add("-pm" + 
-      Preferences.get("boards." + Preferences.get("board") + ".build.mcu").substring(6));
+
     commandDownloader.addAll(params);
 
     return executeUploadCommand(commandDownloader);
