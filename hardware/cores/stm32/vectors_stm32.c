@@ -59,7 +59,7 @@ void (* const g_pfnVectors[])(void) =
     0,                                      /* Reserved */
     IntDefaultHandler,                      //  PendSVC,
     SysTickHandler,                         //  SysTickHandler,
-    IntDefaultHandler,                      //  WWDG_IRQHandler,
+    IntDefaultHandler,                      //  (0) WWDG_IRQHandler,
     IntDefaultHandler,                      //  PVD_IRQHandler,
     IntDefaultHandler,                      //  TAMPER_IRQHandler,
     IntDefaultHandler,                      //  RTC_IRQHandler,
@@ -69,7 +69,7 @@ void (* const g_pfnVectors[])(void) =
     EXTI1_IRQHandler,                       //  EXTI1_IRQHandler,
     EXTI2_IRQHandler,                       //  EXTI2_IRQHandler,
     EXTI3_IRQHandler,                       //  EXTI3_IRQHandler,
-    EXTI4_IRQHandler,                       //  EXTI4_IRQHandler,
+    EXTI4_IRQHandler,                       //  (10) EXTI4_IRQHandler,
     IntDefaultHandler,                      //  DMAChannel1_IRQHandler,
     IntDefaultHandler,                      //  DMAChannel2_IRQHandler,
     IntDefaultHandler,                      //  DMAChannel3_IRQHandler,
@@ -79,7 +79,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      //  DMAChannel7_IRQHandler,
     ADC_IRQHandler,                         //  ADC_IRQHandler,
     IntDefaultHandler,                      //  USB_HP_CAN_TX_IRQHandler,
-    IntDefaultHandler,                      //  USB_LP_CAN_RX0_IRQHandler,
+    IntDefaultHandler,                      //  (20) USB_LP_CAN_RX0_IRQHandler,
     IntDefaultHandler,                      //  CAN_RX1_IRQHandler,
     IntDefaultHandler,                      //  CAN_SCE_IRQHandler,
     IntDefaultHandler,                      //  EXTI9_5_IRQHandler,
@@ -89,7 +89,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      //  TIM1_CC_IRQHandler,
     TIM2_IRQHandler,                        //  TIM2_IRQHandler,
     TIM3_IRQHandler,                        //  TIM3_IRQHandler,
-    TIM4_IRQHandler,                        //  TIM4_IRQHandler,
+    TIM4_IRQHandler,                        //  (30) TIM4_IRQHandler,
     I2C1_EV_IRQHandler,                     //  I2C1_EV_IRQHandler,
     I2C1_ER_IRQHandler,                     //  I2C1_ER_IRQHandler,
     I2C2_EV_IRQHandler,                     //  I2C2_EV_IRQHandler,
@@ -99,9 +99,15 @@ void (* const g_pfnVectors[])(void) =
     USART1_IRQHandler,                      //  USART1_IRQHandler,
     USART2_IRQHandler,                      //  USART2_IRQHandler,
     USART3_IRQHandler,                      //  USART3_IRQHandler,
-    IntDefaultHandler,                      //  EXTI15_10_IRQHandler,
+    IntDefaultHandler,                      //  (40) EXTI15_10_IRQHandler,
     IntDefaultHandler,                      //  RTCAlarm_IRQHandler,
-    IntDefaultHandler                       //  USBWakeUp_IRQHandler,
+    IntDefaultHandler,                      //  USBWakeUp_IRQHandler,
+    /* In part variants STM32F103xC, STM32F103xD, STM32F103xE */
+    IntDefaultHandler,                      //  TIM8_BRK_IRQHandler,
+    IntDefaultHandler,                      //  TIM8_UP_IRQHandler,
+    IntDefaultHandler,                      //  TIM8_TRG_CCUP_IRQHandler,
+    IntDefaultHandler,                      //  TIM8_CC_IRQHandler,
+    IntDefaultHandler                       //  ADC3_IRQHandler,
 };
 
 
