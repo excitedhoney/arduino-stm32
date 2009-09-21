@@ -40,6 +40,7 @@ extern const uint8_t digital_pin_to_timer_chn[];
 
 extern const GPIO_TypeDef * analog_chn_to_port[];
 extern const uint8_t analog_chn_to_pin[];
+extern uint8_t curPinMode[];
 
 // Get the bit location within the hardware port of the given virtual pin.
 // This comes from the pins_*.c file for the active board configuration.

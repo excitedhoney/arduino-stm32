@@ -532,6 +532,9 @@ typedef struct
 #define TIM2_BASE             (APB1PERIPH_BASE + 0x0000)
 #define TIM3_BASE             (APB1PERIPH_BASE + 0x0400)
 #define TIM4_BASE             (APB1PERIPH_BASE + 0x0800)
+#define TIM5_BASE             (APB1PERIPH_BASE + 0x0C00)
+#define TIM6_BASE             (APB1PERIPH_BASE + 0x1000)
+#define TIM7_BASE             (APB1PERIPH_BASE + 0x1400)
 #define RTC_BASE              (APB1PERIPH_BASE + 0x2800)
 #define WWDG_BASE             (APB1PERIPH_BASE + 0x2C00)
 #define IWDG_BASE             (APB1PERIPH_BASE + 0x3000)
@@ -557,6 +560,7 @@ typedef struct
 #define ADC2_BASE             (APB2PERIPH_BASE + 0x2800)
 #define TIM1_BASE             (APB2PERIPH_BASE + 0x2C00)
 #define SPI1_BASE             (APB2PERIPH_BASE + 0x3000)
+#define TIM8_BASE             (APB2PERIPH_BASE + 0x3400)
 #define USART1_BASE           (APB2PERIPH_BASE + 0x3800)
 
 #define DMA_BASE              (AHBPERIPH_BASE + 0x0000)
@@ -594,6 +598,18 @@ typedef struct
 #ifdef _TIM4
   #define TIM4                ((TIM_TypeDef *) TIM4_BASE)
 #endif /*_TIM4 */
+
+#ifdef _TIM5
+  #define TIM5                ((TIM_TypeDef *) TIM5_BASE)
+#endif /*_TIM5 */
+
+#ifdef _TIM6
+  #define TIM6                ((TIM_TypeDef *) TIM6_BASE)
+#endif /*_TIM6 */
+
+#ifdef _TIM7
+  #define TIM7                ((TIM_TypeDef *) TIM7_BASE)
+#endif /*_TIM7 */
 
 #ifdef _RTC
   #define RTC                 ((RTC_TypeDef *) RTC_BASE)
@@ -682,6 +698,10 @@ typedef struct
 #ifdef _SPI1
   #define SPI1                ((SPI_TypeDef *) SPI1_BASE)
 #endif /*_SPI1 */
+
+#ifdef _TIM8
+  #define TIM8                ((TIM1_TypeDef *) TIM8_BASE)
+#endif /*_TIM8 */
 
 #ifdef _USART1
   #define USART1              ((USART_TypeDef *) USART1_BASE)
