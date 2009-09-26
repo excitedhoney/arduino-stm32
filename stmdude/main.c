@@ -20,14 +20,14 @@ lundin@mlu.mine.nu
 #include <fcntl.h>
 
 #include "hexfile.h"
+#include "serialport.h"
 
 #define FLASHBASE 0x08000000
 #define RAMBASE   0x20000000
 
 int baudrate = 38400;
-char * port = "/dev/ttyUSB0";
-int portfd = -1;
-int filefd = -1;
+char * portname = "/dev/ttyUSB0";
+serport_t port = SERIAL_NOT_OPEN;
 int verbose = 0;
 
 struct 
@@ -45,23 +45,23 @@ target =
 
 void opentargetport()
 {
-	if (portfd<0)
+	if (port != SERIAL_NOT_OPEN)
 	{
-		portfd = open(port,O_NONBLOCK | O_RDWR);
-		if (portfd<0)
+		port = openSerialPort(portname,O_NONBLOCK | O_RDWR);
+		if (port == SERIAL_NOT_OPEN)
 		{
-			fprintf(stderr,"Could not open port [%s] \n",port);
+			fprintf(stderr,"Error: Could not open port [%s] \n",portname);
 			_exit(-1);
 		}
 	}
 	// Set serial port parameters E81, raw
-	setPortConfig(portfd, baudrate);
+	setPortConfig(port, baudrate);
 }
 
 void closeport()
 {
-	if (portfd>0) close(portfd);
-	portfd = -1;
+	if (port != SERIAL_NOT_OPEN) closeSerialPort(port);
+	port = SERIAL_NOT_OPEN;
 }
 
 /***********************************************************************
@@ -77,7 +77,7 @@ int bootloader_receive_byte()
 	unsigned char buf[2];
 	while (errorcount++<100)
 	{
-		result = read(portfd,buf,1);
+		result = read(port,buf,1);
 		if (result<0) 
 		{
 			if (errno != 11) break;
@@ -88,7 +88,7 @@ int bootloader_receive_byte()
 	}
 	if (result<0) 
 	{
-		printf("Error %i:%s\n",errno,strerror(errno));
+		printf("Device is not responding %i:%s\n",errno,strerror(errno));
 	}
 	return buf[0];
 }
@@ -100,18 +100,18 @@ int bootloader_wait_ack()
 	{
 		if (ack == 0x1F )
 		{
-			printf("NACK\n");
+			printf("protocol error: NACK\n");
 			return 0;
 		}
 		else
 		{
-			printf("Read ack: 0x%02x\n",ack);
+			printf("protocol error: Wait ack got 0x%02x\n",ack);
 			return 0;
 		}
 	}
 	else
 	{
-		if (verbose>3) printf("ACK\n");
+		if (verbose>4) printf("ACK\n");
 		return 1;
 	}
 }
@@ -121,7 +121,7 @@ int bootloader_send_command(unsigned char cmd)
 	unsigned char buf[2];
 	buf[0]=cmd;
 	buf[1]=~cmd;
-	write(portfd,buf,2);
+	write(port,buf,2);
 	return bootloader_wait_ack();
 }
 
@@ -136,7 +136,7 @@ int bootloader_send_address(unsigned int addr)
 		addr = addr>>8;
 		buf[4] = buf[4]^buf[k];
 	}
-	write(portfd,buf,5);
+	write(port,buf,5);
 	return bootloader_wait_ack();
 }
 
@@ -145,9 +145,9 @@ void bootloader_connect()
 	int ack=0;
 	int count=0;
 	unsigned char buf[2]={0x7F,0x7F};
-	while (!ack & count++<2)
+	while (!ack & (count++<2))
 	{
-		write(portfd,buf,1);
+		write(port,buf,1);
 		ack = bootloader_wait_ack();
 	}
 }
@@ -188,7 +188,6 @@ void bootloader_get_commands()
 
 void bootloader_go(unsigned int addr)
 {
-	int k;
 	printf("Bootloader go\n");
 }
 
@@ -237,13 +236,13 @@ int bootloader_write_memory(int addr,int len,char * outbuffer)
 		if (! ack ) return -1;
 		n = thisblock-1;
 		check = n;
-		write(portfd,&n,1);
+		write(port,&n,1);
 		for (k=0; k<thisblock; k++)
 		{
-			write(portfd,&outbuffer[k+count],1);
+			write(port,&outbuffer[k+count],1);
 			check = check^outbuffer[k+count];
 		}
-		write(portfd,&check,1);
+		write(port,&check,1);
 		ack = bootloader_wait_ack();
 		if (! ack ) return -1;
 		count += thisblock;
@@ -253,7 +252,6 @@ int bootloader_write_memory(int addr,int len,char * outbuffer)
 
 void bootloader_erase_memory()
 {
-	int k;
 	int ack;
 	if (verbose>0) printf("Bootloader erase memory\n");
 	ack = bootloader_send_command(0x43);
@@ -265,7 +263,6 @@ void bootloader_erase_memory()
 
 void bootloader_write_unprotect()
 {
-	int k;
 	printf("Bootloader write unprotect\n");
 }
 
@@ -287,7 +284,7 @@ void memop(char * cmdstr)
 	intelln_t * hexdata;
 	
 	int k=0;
-	int result;
+	int result = 0;
 	int len = strlen(cmdstr);
 
 	memtype = cmdstr;
@@ -332,13 +329,14 @@ void memop(char * cmdstr)
 				len = 0;
 				if (result < 0)
 				{
-					fprintf(stderr,"Error in memory write\n");
-					return;
+					fprintf(stderr,"Memory write failed\n");
+					break;
 				}
 			}
 			curhexline = curhexline->next;
 		}
-		if (verbose>=0) printf("Memory write finished without error\n");
+		if (result == 0)
+			if (verbose>=0) printf("Memory write finished without error\n");
 	}
 	
 	// Read data from target
@@ -357,7 +355,6 @@ int main(int argc, char * argv[])
 	int k;
 	int eraseflag = 0;
 	int lastopt = 0;
-	unsigned char data[16000];
 	
 	for (k=0; k<argc;k++)
 	{
@@ -371,11 +368,11 @@ int main(int argc, char * argv[])
 		{
 			if (argv[k][2])
 			{
-				port = argv[k]+2;
+				portname = argv[k]+2;
 			}
 			else
 			{
-				port = argv[++k];
+				portname = argv[++k];
 			}
 			lastopt = k;
 			closeport();
@@ -410,7 +407,7 @@ int main(int argc, char * argv[])
 		}
 	}
 	
-	printf("Using port %s with baudrate %i \n",port,baudrate);
+	printf("Using port %s with baudrate %i \n",portname,baudrate);
 	opentargetport();
 	bootloader_connect();
 	bootloader_get_commands();
