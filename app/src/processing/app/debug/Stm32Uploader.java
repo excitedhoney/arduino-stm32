@@ -1,9 +1,10 @@
 /* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 
 /*
-  Stm32Uploader - uploader implementation using stmdude
+  Stm32Uploader - uploader implementation using stmdude for STM32 chips
   Part of the Arduino project - http://www.arduino.cc/
 
+  Copyright (c) 2009 Magnus Lundin
   Copyright (c) 2004-05
   Hernando Barragan
 
@@ -42,7 +43,7 @@ public class Stm32Uploader extends Uploader  {
   }
 
   // XXX: add support for uploading sketches using a programmer
-  public boolean uploadUsingPreferences(String buildPath, String className)
+  public boolean uploadUsingPreferences(String buildPath, String className, boolean verbose)
   throws RunnerException {
     String uploadUsing = Preferences.get("boards." + Preferences.get("board") + ".upload.using");
     if (uploadUsing == null) {
