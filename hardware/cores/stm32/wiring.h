@@ -45,6 +45,9 @@ extern "C"{
 #define ANALOG 0xFF
 #define ALTOUT_PP 0x09
 
+#define PWM8BIT   8
+#define PWM12BIT 12
+
 #define true 0x1
 #define false 0x0
 

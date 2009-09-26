@@ -39,11 +39,10 @@
 #define ADC_CR2_ADON (1<<0)
 
 uint8_t analog_reference = DEFAULT;
+uint8_t pwm_resolution = PWM8BIT;
 
-void configTimerPWM(TIM_TypeDef * TIM, uint8_t chn)
+void configTimerFreq(TIM_TypeDef * TIM, uint16_t maxcount)
 {
-	uint32_t ccmr;
-	
 	TIM->CR1 &= 1;
 	TIM->CR2 = 0;
 	TIM->PSC = 0;
@@ -51,6 +50,14 @@ void configTimerPWM(TIM_TypeDef * TIM, uint8_t chn)
 	/* 12 bit PWM mode */
 	/* PWM frequency is 72kHz/4096 */	
 	TIM->ARR = 0xFFF; 
+
+	/* Counter enable */
+	TIM->CR1 |= 1;
+};
+
+void configTimerChannelPWM(TIM_TypeDef * TIM, uint8_t chn)
+{
+	uint32_t ccmr;
 
 	/* Output compare disable */
 	TIM->CCER &= ~(0xF<<(4*chn));
@@ -64,10 +71,12 @@ void configTimerPWM(TIM_TypeDef * TIM, uint8_t chn)
 	/* Output compare enable */
 	TIM->CCER |= (0x1<<(4*chn));
 
-	/* Counter enable */
-	TIM->CR1 |= 1;
-	
 };
+
+void setPWMResolution(uint8_t bits)
+{
+	pwm_resolution = bits;
+}
 
 void analogCalibrate()
 {
@@ -142,12 +151,14 @@ void analogWrite(uint8_t pin, int val)
 		if (curPinMode[pin] != ALTOUT_PP)
 		{
 			pinMode(pin, ALTOUT_PP);	
-			// Setup timer
-			configTimerPWM(TIM, chn);
+			// Setup timer - 12 bit PWM
+			// Frequency is 72/4096 MHz
+			configTimerFreq(TIM, 0xFFF);
+			configTimerChannelPWM(TIM, chn);
 		}
 
-		// set pwm duty
-		*((uint32_t *)(&TIM->CCR1)+(chn)) = val;
+		// set pwm duty cycle
+		*((uint32_t *)(&TIM->CCR1)+(chn)) = (val<<(PWM12BIT-pwm_resolution));
 
 	} else
 	{
