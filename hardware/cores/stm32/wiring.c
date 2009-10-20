@@ -192,9 +192,5 @@ void init()
 
 	analogCalibrate();
 
-	// the bootloader connects pins 0 and 1 to the USART; disconnect them
-	// here so they can be used as normal digital i/o; they will be
-	// reconnected in Serial.begin()
-
 	EnableInterrups();
 }
