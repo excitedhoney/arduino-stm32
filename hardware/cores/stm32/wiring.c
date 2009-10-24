@@ -49,10 +49,12 @@
 
 // Must be volatile or gcc will optimize away some uses of it.
 volatile unsigned long systick_count;
+volatile unsigned timeout=0;
 
 void SysTickHandler(void)
 {
 	systick_count++;
+	if (timeout) timeout--;
 }
 
 unsigned long millis()

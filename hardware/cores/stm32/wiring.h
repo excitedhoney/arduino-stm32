@@ -107,6 +107,8 @@ typedef unsigned int word;
 typedef uint8_t boolean;
 typedef uint8_t byte;
 
+extern volatile unsigned timeout;
+
 void init(void);
 
 void pinMode(uint8_t, uint8_t);
