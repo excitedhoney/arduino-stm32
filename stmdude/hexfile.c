@@ -7,12 +7,11 @@ intelln_t * readhexline(FILE * infile);
 
 intelln_t * loadhexfile(char * filename) {
 	FILE * infile;
-	infile = fopen(filename,"r");
 	intelln_t * _first = 0;
-	int _size=0;
     struct intelln * line; 
     struct intelln * lastline;
     
+	infile = fopen(filename,"r");
     if (infile == NULL) 
     {
 		fprintf(stderr,"Could not open file %s\n",filename);
@@ -49,14 +48,12 @@ void deletehexdata(intelln_t * hexdata)
 	}
 }
 
-
 intelln_t * readhexline(FILE * infile) {
    unsigned char inbuf[524];
    unsigned char data[256];
    unsigned char crcbuf[4];
    unsigned char hexval[8];
    intelln_t * line; 
-   int bp=0;
    int len;
    int addr;
    int type;
@@ -93,9 +90,9 @@ intelln_t * readhexline(FILE * infile) {
    fgets((char *)crcbuf,3,infile);
    crc = strtol((char *)crcbuf, NULL, 16);
 
-   if (verbose>2)   printf("length:%i, addr:%x, type:%i, data:%s, crc:%s %x \n",len,addr,type,inbuf,crcbuf,crc); 
+   if (verbose>4)   printf("length:%i, addr:%x, type:%i, data:%s, crc:%s %x \n",len,addr,type,inbuf,crcbuf,crc); 
 
-   compcrc = len+type+(addr>>8)+addr & 0xff;
+   compcrc = len+type+(addr>>8)+(addr & 0xff);
    /* dehex data */
    for (k=len-1;k>=0;k--) {
       inbuf[2*k+2] = 0;
@@ -106,9 +103,7 @@ intelln_t * readhexline(FILE * infile) {
    compcrc =  ~compcrc + 1;
    for (k=0;k<len;k++) {
       inbuf[2*k+2] = 0;
-//      printf("%x ",data[k]); 
    }
-//   printf(": %x\n",compcrc);
    /* cleanup end of line */
    c = 0;
    while ((!feof(infile)) && (c!=':')) {

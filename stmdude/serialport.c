@@ -5,6 +5,34 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 
+#include "serialport.h"
+
+/*
+http://notes.ump.edu.my/fkee/e-Books/C%20Programming%20&%20PC%20interfacing/Serial%20port%20programming%20for%20Windows%20and%20Linux.pdf
+
+http://msdn.microsoft.com/en-us/library/ms810467.aspx#serial_topic6
+*/
+
+serport_t openSerialPort(const char * portname, int portflags)
+{
+#ifndef WIN32
+	return open(portname, portflags);
+#else	
+	HANDLE fileHandle = CreateFile(portname,
+						GENERIC_READ | GENERIC_WRITE,
+						0,
+						0,
+						OPEN_EXISTING,
+						0,
+						0);
+	return fileHandle;
+#endif
+};
+
+void closeSerialPort(serport_t port)
+{
+	close(port);
+};
 
 void setPortConfig(int portfd, int baud)
 {
