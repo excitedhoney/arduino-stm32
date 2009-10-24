@@ -3,7 +3,7 @@
 /*
   Part of the Processing project - http://processing.org
 
-  Copyright (c) 2004-08 Ben Fry and Casey Reas
+  Copyright (c) 2004-09 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
   This program is free software; you can redistribute it and/or modify
@@ -1142,7 +1142,9 @@ public class Sketch {
    *    X. afterwards, some of these steps need a cleanup function
    * </PRE>
    */
-  protected String compile(Target target) throws RunnerException {
+  protected String compile(Target target, boolean verbose)
+    throws RunnerException {
+    
     String name;
   
     // make sure the user didn't hide the sketch folder
@@ -1175,7 +1177,7 @@ public class Sketch {
     cleanup();
 
     // handle preprocessing the main file's code
-    name = build(tempBuildFolder.getAbsolutePath(), target);
+    name = build(tempBuildFolder.getAbsolutePath(), target, verbose);
     size(tempBuildFolder.getAbsolutePath(), name);
     
     return name;
@@ -1366,7 +1368,9 @@ public class Sketch {
    *
    * @return null if compilation failed, main class name if not
    */
-  public String build(String buildPath, Target target) throws RunnerException {
+  public String build(String buildPath, Target target, boolean verbose)
+    throws RunnerException {
+    
     // run the preprocessor
     String primaryClassName = preprocess(buildPath, target);
 
@@ -1377,22 +1381,22 @@ public class Sketch {
         compiler = new CompilerARM();
     else
         compiler = new Compiler();
-    if (compiler.compile(this, buildPath, primaryClassName, target)) {
+    if (compiler.compile(this, buildPath, primaryClassName, target, verbose)) {
       return primaryClassName;
     }
     return null;
   }
 
 
-  protected boolean exportApplet(Target target) throws Exception {
-    return exportApplet(new File(folder, "applet").getAbsolutePath(), target);
+  protected boolean exportApplet(Target target, boolean verbose) throws Exception {
+    return exportApplet(new File(folder, "applet").getAbsolutePath(), target, verbose);
   }
 
 
   /**
    * Handle export to applet.
    */
-  public boolean exportApplet(String appletPath, Target target)
+  public boolean exportApplet(String appletPath, Target target, boolean verbose)
     throws RunnerException, IOException {
     
     // Make sure the user didn't hide the sketch folder
@@ -1416,7 +1420,7 @@ public class Sketch {
     appletFolder.mkdirs();
 
     // build the sketch
-    String foundName = build(appletFolder.getPath(), target);
+    String foundName = build(appletFolder.getPath(), target, false);
     // (already reported) error during export, exit this function
     if (foundName == null) return false;
 
@@ -1430,10 +1434,10 @@ public class Sketch {
 //    }
 
     size(appletFolder.getPath(), foundName);
-    upload(appletFolder.getPath(), foundName);
+    upload(appletFolder.getPath(), foundName, verbose);
 
     return true;
-  }
+      }
 
 
   protected void size(String buildPath, String suggestedClassName)
@@ -1441,24 +1445,24 @@ public class Sketch {
     long size = 0;
     long maxsize = Preferences.getInteger("boards." + Preferences.get("board") + ".upload.maximum_size");
     Sizer sizer = new Sizer(buildPath, suggestedClassName);
-    try {
+      try {
       size = sizer.computeSize();
       System.out.println("Binary sketch size: " + sizer.getFlashSize() + " bytes (of a " +
         maxsize + " byte maximum)");      
       System.out.println("Static RAM usage: " + sizer.getRamSize() + " bytes");      
     } catch (RunnerException e) {
       System.err.println("Couldn't determine program size: " + e.getMessage());
-    }
+      }
 
     if (size > maxsize)
       throw new RunnerException(
         "Sketch too big; see http://www.arduino.cc/en/Guide/Troubleshooting#size for tips on reducing it.");
-  }
+    }
 
 
-  protected String upload(String buildPath, String suggestedClassName)
+  protected String upload(String buildPath, String suggestedClassName, boolean verbose)
     throws RunnerException {
-    
+
     Uploader uploader;
 
     // download the program
@@ -1468,10 +1472,11 @@ public class Sketch {
     else
         uploader = new AvrdudeUploader();
     boolean success = uploader.uploadUsingPreferences(buildPath,
-                                                      suggestedClassName);
+                                                      suggestedClassName,
+                                                      verbose);
 
     return success ? suggestedClassName : null;
-  }
+    }
 
   /**
    * Replace all commented portions of a given String as spaces.
@@ -1533,8 +1538,8 @@ public class Sketch {
    * Export to application via GUI. 
    */
   protected boolean exportApplication() throws IOException, RunnerException {
-    return false;
-  }
+        return false;
+      }
 
 
   /**
@@ -1542,8 +1547,8 @@ public class Sketch {
    */
   public boolean exportApplication(String destPath,
                                    int exportPlatform) throws IOException, RunnerException {
-    return false;
-  }
+      return false;
+    }
 
 
   protected void addManifest(ZipOutputStream zos) throws IOException {
@@ -1563,8 +1568,8 @@ public class Sketch {
    * Read from a file with a bunch of attribute/value pairs
    * that are separated by = and ignore comments with #.
    */
-  protected Hashtable readSettings(File inputFile) {
-    Hashtable outgoing = new Hashtable();
+  protected HashMap<String,String> readSettings(File inputFile) {
+    HashMap<String,String> outgoing = new HashMap<String,String>();
     if (!inputFile.exists()) return outgoing;  // return empty hash
 
     String lines[] = PApplet.loadStrings(inputFile);
@@ -1594,7 +1599,7 @@ public class Sketch {
    */
   protected void packClassPathIntoZipFile(String path,
                                           ZipOutputStream zos,
-                                          Hashtable zipFileContents)
+                                          HashMap<String,Object> zipFileContents)
     throws IOException {
     String[] pieces = PApplet.split(path, File.pathSeparatorChar);
 
@@ -1606,7 +1611,7 @@ public class Sketch {
           pieces[i].toLowerCase().endsWith(".zip")) {
         try {
           ZipFile file = new ZipFile(pieces[i]);
-          Enumeration entries = file.entries();
+          Enumeration<?> entries = file.entries();
           while (entries.hasMoreElements()) {
             ZipEntry entry = (ZipEntry) entries.nextElement();
             if (entry.isDirectory()) {
@@ -1892,8 +1897,8 @@ public class Sketch {
     }
     return codeFolder;
   }
-  
-  
+
+
   public ArrayList<File> getImportedLibraries() {
     return importedLibraries;
   }

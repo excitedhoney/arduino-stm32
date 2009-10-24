@@ -3,6 +3,7 @@
 /*
   Part of the Processing project - http://processing.org
 
+  Copyright (c) 2009 Magnus Lundin
   Copyright (c) 2004-08 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
@@ -56,10 +57,12 @@ public class CompilerARM extends Compiler {
   public boolean compile(Sketch sketch,
                          String buildPath,
                          String primaryClassName,
-			 Target target) throws RunnerException {
+                         Target target,
+                         boolean verbose) throws RunnerException {
     this.sketch = sketch;
     this.buildPath = buildPath;
     this.primaryClassName = primaryClassName;
+    this.verbose = verbose;
 
     // the pms object isn't used for anything but storage
     MessageStream pms = new MessageStream(this);
@@ -79,6 +82,7 @@ public class CompilerARM extends Compiler {
     
     List<File> targetObjectFiles = 
       compileFiles(toolchainBasePath, buildPath, includePaths,
+                   findFilesInPath(target.getPath(), "S", true),
                    findFilesInPath(target.getPath(), "c", true),
                    findFilesInPath(target.getPath(), "cpp", true));
                    
@@ -95,12 +99,12 @@ public class CompilerARM extends Compiler {
     }
 
     // 2. compile the libraries, outputting .o files to: <buildPath>/<library>/
-    
+
     // use library directories as include paths for all libraries
     for (File file : sketch.getImportedLibraries()) {
       includePaths.add(file.getPath());
     }
-    
+
     for (File libraryFolder : sketch.getImportedLibraries()) {
       File outputFolder = new File(buildPath, libraryFolder.getName());
       createFolder(outputFolder);
@@ -108,25 +112,28 @@ public class CompilerARM extends Compiler {
       includePaths.add(libraryFolder.getPath() + File.separator + "utility");
       objectFiles.addAll(
         compileFiles(toolchainBasePath, outputFolder.getAbsolutePath(), includePaths,
+                     findFilesInFolder(libraryFolder, "S", false),
                      findFilesInFolder(libraryFolder, "c", false),
                      findFilesInFolder(libraryFolder, "cpp", false)));
       outputFolder = new File(outputFolder, "utility");
       createFolder(outputFolder);
       objectFiles.addAll(
         compileFiles(toolchainBasePath, outputFolder.getAbsolutePath(), includePaths,
+                     findFilesInFolder(new File(libraryFolder, "utility"), "S", false),
                      findFilesInFolder(new File(libraryFolder, "utility"), "c", false),
                      findFilesInFolder(new File(libraryFolder, "utility"), "cpp", false)));
       // other libraries should not see this library's utility/ folder
       includePaths.remove(includePaths.size() - 1);
     }
-    
+
     // 3. compile the sketch (already in the buildPath)
-    
+
     objectFiles.addAll(
       compileFiles(toolchainBasePath, buildPath, includePaths,
+                   findFilesInPath(buildPath, "S", false),
                    findFilesInPath(buildPath, "c", false),
                    findFilesInPath(buildPath, "cpp", false)));
-                   
+
     // 4. link it all together into the .elf file
     
     List baseCommandLinker = new ArrayList(Arrays.asList(new String[] {
@@ -170,14 +177,23 @@ public class CompilerARM extends Compiler {
     
     return true;
   }
-  
+
   protected List<File> compileFiles(String avrBasePath,
                                   String buildPath, List<File> includePaths,
+                                  List<File> sSources, 
                                   List<File> cSources, List<File> cppSources)
     throws RunnerException {
-    
+
     List<File> objectPaths = new ArrayList<File>();
     
+    for (File file : sSources) {
+      String objectPath = buildPath + File.separator + file.getName() + ".o";
+      objectPaths.add(new File(objectPath));
+      execAsynchronously(getCommandCompilerS(avrBasePath, includePaths,
+                                             file.getAbsolutePath(),
+                                             objectPath));
+    }
+ 		
     for (File file : cSources) {
         String objectPath = buildPath + File.separator + file.getName() + ".o";
         objectPaths.add(new File(objectPath));
@@ -185,7 +201,7 @@ public class CompilerARM extends Compiler {
                                                file.getAbsolutePath(),
                                                objectPath));
     }
-    
+
     for (File file : cppSources) {
         String objectPath = buildPath + File.separator + file.getName() + ".o";
         objectPaths.add(new File(objectPath));
@@ -196,7 +212,6 @@ public class CompilerARM extends Compiler {
     
     return objectPaths;
   }
-    
   
   /////////////////////////////////////////////////////////////////////////////
 

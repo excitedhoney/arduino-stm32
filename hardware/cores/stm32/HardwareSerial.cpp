@@ -31,7 +31,7 @@
 #include "stm32f10x_usart.h"
 #include "stm32f10x_nvic.h"
 #define USART_Enable 0x2000
-#define USART_RXNEIE 0x0200
+#define USART_RXNEIE 0x0020
 
 // Define constants and variables for buffering incoming serial data.  We're
 // using a ring buffer (I think), in which rx_buffer_head is the index of the
@@ -105,7 +105,7 @@ void HardwareSerial::begin(long speed)
 	if (_usart == USART1 )
 	{
 		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-		NVIC->ISER[USART1_IRQChannel%32] = (1<<(USART1_IRQChannel/32));
+		NVIC->ISER[USART1_IRQChannel/32] = (1<<(USART1_IRQChannel%32));
 		// Configure peripherial pins, TX - PA9, RX - PA10
 		GPIOA->CRH = (GPIOA->CRH & 0xFFFFF00F) | 0x000004A0;
 	}
@@ -113,8 +113,8 @@ void HardwareSerial::begin(long speed)
 	{
 		// USART2 runs on APB1 clock which is HCLK/2 = 36 MHz
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-		NVIC->ISER[USART2_IRQChannel%32] = (1<<(USART2_IRQChannel/32));
-		speed = speed/2;
+		NVIC->ISER[USART2_IRQChannel/32] = (1<<(USART2_IRQChannel%32));
+		speed = speed*2;
 		// Configure peripherial pins, TX - PA2, RX - PA3
 		GPIOA->CRL = (GPIOA->CRL & 0xFFFF00FF) | 0x00004A00;
 	}
@@ -122,8 +122,8 @@ void HardwareSerial::begin(long speed)
 	{
 		// USART3 runs on APB1 clock which is HCLK/2 = 36 MHz
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-		NVIC->ISER[USART3_IRQChannel%32] = (1<<(USART3_IRQChannel/32));
-		speed = speed/2;
+		NVIC->ISER[USART3_IRQChannel/32] = (1<<(USART3_IRQChannel%32));
+		speed = speed*2;
 		// Configure peripherial pins, TX - PB10, RX - PB11
 		GPIOB->CRH = (GPIOB->CRH & 0xFFFF00FF) | 0x00004A00;
 	}

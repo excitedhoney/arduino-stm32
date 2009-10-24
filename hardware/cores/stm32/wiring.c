@@ -55,26 +55,6 @@ void SysTickHandler(void)
 	systick_count++;
 }
 
-/* Counter with 1/8th uS resolution */ 
-static unsigned long micros8()
-{
-	// Glitch free clock
-	uint32_t v0 = SysTick->VAL;
-	uint32_t c0 = systick_count;
-	uint32_t v1 = SysTick->VAL;
-	uint32_t c1 = systick_count;
-	uint32_t tickc;
-	
-	if (v1 < v0) 
-		// Downcounting, no systick rollover
-		tickc = c0;
-	else
-		// systick rollover, use last count value
-		tickc = c1;
-
-	return tickc*8000-v1/(MCK/8000000UL);
-}
-
 unsigned long millis()
 {
 	return systick_count;
@@ -82,7 +62,18 @@ unsigned long millis()
 
 unsigned long micros()
 {
-	return micros8()/8;
+	// Glitch free clock
+	long v0 = SysTick->VAL;
+	long c0 = systick_count;
+	long v1 = SysTick->VAL;
+	long c1 = systick_count;
+	
+	if (v1 < v0) 
+		// Downcounting, no systick rollover
+		return c0*8000-v1/(MCK/8000000UL);
+	else
+		// systick rollover, use last count value
+		return c1*8000-v1/(MCK/8000000UL);
 }
 
 void delay(unsigned long ms)
@@ -98,32 +89,24 @@ void delay(unsigned long ms)
  * too frequently. */
 void delayMicroseconds(unsigned int us)
 {
-	int32_t startSysTick;
-	int32_t endSysTick;
+	uint32_t startUs = micros();
+	uint32_t endUs = startUs + 8*us;
+
+//	DisableInterrups();
 	
-	if (us==0) return;
-
-	startSysTick = SysTick->VAL;
-	endSysTick = (startSysTick - us*(MCK/1000000UL));
-	/* Remove call and function overhead */
-	endSysTick += 30;
-	if (endSysTick<0) endSysTick += (MCK/TCK);
-
-	if (endSysTick>startSysTick)
-	{
-		// Wait for the rollover
-		while (SysTick->VAL <= startSysTick)
+	if (endUs>startUs)
+		while (micros() < endUs )
 			;
-		while (SysTick->VAL > endSysTick)
-			;
-	}
 	else
 	{
-		uint32_t thisval = SysTick->VAL;
-		while ((thisval > endSysTick)&&(thisval <= startSysTick)) 
-			thisval = SysTick->VAL;
+		// Handle micros() overflow
+		while (micros() >= startUs)
+			;
+		while (micros() < endUs)
+			;
 	}
 
+//	EnableInterrups();
 }
 
 
@@ -160,12 +143,15 @@ void init()
 		RCC_HCLKConfig(RCC_SYSCLK_Div1);
 		// 5. Clock system from PLL
 		RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-
+	
 	// Enable GPIO port clocks
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);
-	// Pin configurations and remappings
-	AFIO->MAPR = (AFIO->MAPR&~(7<<24))|(4<<24);
-
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);
+	// Enable timer clocks
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 | RCC_APB1Periph_TIM4, ENABLE);
+    // Pin configurations and remappings
+    /* Disable JTAG functionality */
+    AFIO->MAPR = (AFIO->MAPR&~(7<<24))|(4<<24);
+	
 	// systick is used for millis() and delay()
 	SysTick->LOAD = (MCK/TCK)-1;
 	/* Enable SysTick and TICKINT using MCK as clock source */
@@ -205,10 +191,6 @@ void init()
 	analogEnable(true);
 
 	analogCalibrate();
-
-	// the bootloader connects pins 0 and 1 to the USART; disconnect them
-	// here so they can be used as normal digital i/o; they will be
-	// reconnected in Serial.begin()
 
 	EnableInterrups();
 }

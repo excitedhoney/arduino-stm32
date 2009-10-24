@@ -52,6 +52,8 @@ void pinMode(uint8_t pin, uint8_t mode)
 
 	if (port == NOT_A_PIN) return;
 
+	curPinMode[pin] = mode;
+
 	if (bit<8)
 		 pCR = &port->CRL;
 	else

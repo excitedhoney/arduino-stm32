@@ -154,7 +154,7 @@ uint8_t digital_pin_to_bitnumber[] = {
 };
 
 const TIM_TypeDef * digital_pin_to_timer_PGM[] = {
-	NOT_ON_TIMER, /* 0 - port A */
+	TIM2, /* 0 - port A */
 	TIM2,
 	TIM2,
 	TIM2,
@@ -205,7 +205,7 @@ const TIM_TypeDef * digital_pin_to_timer_PGM[] = {
 };
 
 const uint8_t digital_pin_to_timer_chn[] = {
-	NOT_ON_TIMER, /* 0 - port A */
+	1, /* 0 - port A */
 	2,
 	3,
 	4,
@@ -293,3 +293,54 @@ const uint8_t analog_chn_to_pin[] = {
 	37
 };
 
+uint8_t curPinMode[] = {
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT,
+	INPUT
+};

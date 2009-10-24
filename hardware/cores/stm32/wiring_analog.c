@@ -25,6 +25,7 @@
 #include "wiring_private.h"
 #include "pins_stm32.h"
 #include "stm32f10x_adc.h"
+#include "stm32f10x_tim.h"
 
 #define ADC_SR_EOC  (1<<1)
 #define ADC_CR1_DISCEN  (1<<11)
@@ -38,6 +39,44 @@
 #define ADC_CR2_ADON (1<<0)
 
 uint8_t analog_reference = DEFAULT;
+uint8_t pwm_resolution = PWM8BIT;
+
+void configTimerFreq(TIM_TypeDef * TIM, uint16_t maxcount)
+{
+	TIM->CR1 &= 1;
+	TIM->CR2 = 0;
+	TIM->PSC = 0;
+	TIM->SMCR = 0;
+	/* 12 bit PWM mode */
+	/* PWM frequency is 72kHz/4096 */	
+	TIM->ARR = 0xFFF; 
+
+	/* Counter enable */
+	TIM->CR1 |= 1;
+};
+
+void configTimerChannelPWM(TIM_TypeDef * TIM, uint8_t chn)
+{
+	uint32_t ccmr;
+
+	/* Output compare disable */
+	TIM->CCER &= ~(0xF<<(4*chn));
+
+	/* Configure Output Compare */
+	ccmr = *((uint32_t *)(&TIM->CCMR1)+(chn>>1));
+	ccmr &=  ~(0xFF<<(8*(chn&1)));
+	ccmr |= ( (TIM_OCMode_PWM1 | TIM_OCPreload_Enable)<<(8*(chn&1)) );
+	*((uint32_t *)(&TIM->CCMR1)+(chn>>1)) = ccmr;
+
+	/* Output compare enable */
+	TIM->CCER |= (0x1<<(4*chn));
+
+};
+
+void setPWMResolution(uint8_t bits)
+{
+	pwm_resolution = bits;
+}
 
 void analogCalibrate()
 {
@@ -100,6 +139,7 @@ void analogWrite(uint8_t pin, int val)
 
 	TIM = digitalPinToTimer(pin);
 	chn = digital_pin_to_timer_chn[pin];
+	chn = chn-1;
 	
 	// We need to make sure the PWM output is enabled for those pins
 	// that support it, as we turn it off when digitally reading or
@@ -108,11 +148,17 @@ void analogWrite(uint8_t pin, int val)
 	// call for the analog output pins.
 
 	if (TIM != 0) {
-		pinMode(pin, ALTOUT_PP);	
-		// connect pwm to pin on timer 1, channel A
+		if (curPinMode[pin] != ALTOUT_PP)
+		{
+			pinMode(pin, ALTOUT_PP);	
+			// Setup timer - 12 bit PWM
+			// Frequency is 72/4096 MHz
+			configTimerFreq(TIM, 0xFFF);
+			configTimerChannelPWM(TIM, chn);
+		}
 
-		// set pwm duty
-		*((uint32_t *)(&TIM->CCR1)+(chn-1)) = val;
+		// set pwm duty cycle
+		*((uint32_t *)(&TIM->CCR1)+(chn)) = (val<<(PWM12BIT-pwm_resolution));
 
 	} else
 	{
