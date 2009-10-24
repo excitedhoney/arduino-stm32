@@ -27,7 +27,7 @@ void IntDefaultHandler(void)
 //*****************************************************************************
 
 extern void SysTickHandler(void);
-extern void USART1_IRQHandler(void);
+void  USART1_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
 void  USART2_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
 
 void  ADC_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));

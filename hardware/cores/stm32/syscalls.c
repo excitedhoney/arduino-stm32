@@ -36,3 +36,9 @@ void * _sbrk_r(
 	
 	return base;		/*  Return pointer to start of new heap area.  */
 }
+void abort(void)
+{
+	while(1);
+}
+
+
