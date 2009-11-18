@@ -4,7 +4,7 @@
 #include <inttypes.h>
 
 #include "Spi.h"
-#include "stm32f10x_map.h"
+#include "stm32f10x.h"
 
 class HardwareSpi : public Spi
 {

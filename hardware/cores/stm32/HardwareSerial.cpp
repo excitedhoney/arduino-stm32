@@ -27,9 +27,9 @@
 #include "wiring_private.h"
 
 #include "HardwareSerial.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_usart.h"
-#include "stm32f10x_nvic.h"
+//#include "stm32f10x_rcc.h"
+//#include "stm32f10x_usart.h"
+//#include "stm32f10x_nvic.h"
 #define USART_Enable 0x2000
 #define USART_RXNEIE 0x0020
 
@@ -104,16 +104,18 @@ void HardwareSerial::begin(long speed)
 	// Enable perhipherial clock
 	if (_usart == USART1 )
 	{
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-		NVIC->ISER[USART1_IRQChannel/32] = (1<<(USART1_IRQChannel%32));
+		RCC->APB2ENR = RCC_APB2ENR_USART1EN;
+//		RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+		NVIC->ISER[USART1_IRQn/32] = (1<<(USART1_IRQn%32));
 		// Configure peripherial pins, TX - PA9, RX - PA10
 		GPIOA->CRH = (GPIOA->CRH & 0xFFFFF00F) | 0x000004A0;
 	}
 	if (_usart == USART2 )
 	{
 		// USART2 runs on APB1 clock which is HCLK/2 = 36 MHz
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-		NVIC->ISER[USART2_IRQChannel/32] = (1<<(USART2_IRQChannel%32));
+		RCC->APB1ENR = RCC_APB1ENR_USART2EN;
+//		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+		NVIC->ISER[USART2_IRQn/32] = (1<<(USART2_IRQn%32));
 		speed = speed*2;
 		// Configure peripherial pins, TX - PA2, RX - PA3
 		GPIOA->CRL = (GPIOA->CRL & 0xFFFF00FF) | 0x00004A00;
@@ -121,8 +123,9 @@ void HardwareSerial::begin(long speed)
 	if (_usart == USART3 )
 	{
 		// USART3 runs on APB1 clock which is HCLK/2 = 36 MHz
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-		NVIC->ISER[USART3_IRQChannel/32] = (1<<(USART3_IRQChannel%32));
+		RCC->APB1ENR = RCC_APB1ENR_USART3EN;
+//		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+		NVIC->ISER[USART3_IRQn/32] = (1<<(USART3_IRQn%32));
 		speed = speed*2;
 		// Configure peripherial pins, TX - PB10, RX - PB11
 		GPIOB->CRH = (GPIOB->CRH & 0xFFFF00FF) | 0x00004A00;
@@ -133,7 +136,7 @@ void HardwareSerial::begin(long speed)
 	_usart->CR3 = 0;
 	_usart->SR = 0;
 	_usart->BRR = MCK / speed;
-	_usart->CR1 = USART_Mode_Rx | USART_Mode_Tx | USART_RXNEIE | USART_Enable;
+	_usart->CR1 = USART_CR1_RE | USART_CR1_TE | USART_RXNEIE | USART_CR1_UE;
 
 }
 
@@ -170,7 +173,7 @@ void HardwareSerial::flush()
 
 void HardwareSerial::write(uint8_t c)
 {
-	while (!(_usart->SR & USART_FLAG_TXE))
+	while (!(_usart->SR & USART_SR_TXE))
 		;
 
 	_usart->DR = c;

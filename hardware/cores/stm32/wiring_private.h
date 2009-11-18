@@ -25,13 +25,23 @@
 #ifndef WiringPrivate_h
 #define WiringPrivate_h
 
-//#include <avr/io.h>
-//#include <avr/interrupt.h>
-//#include <avr/delay.h>
+/* Chiptype and standard defines */
+#define STM32F10X_HD
+#include <stm32f10x.h>
+
+#define ADC_SampleTime_28Cycles5                   ((u8)0x03)
+
+#define SPI_BaudRatePrescaler_64           ((u16)0x0028)
+
+#define TIM_CCMR_OCMode_PWM1                   ((u16)0x0060)
+#define TIM_CCMR_OCPreload_Enable              ((u16)0x0008)
+
+#if 0
 #include <stm32f10x_map.h>
 #include <stm32f10x_nvic.h>
 #include <stm32f10x_gpio.h>
 #include <stm32f10x_systick.h>
+#endif
 #include <stdio.h>
 #include <stdarg.h>
 

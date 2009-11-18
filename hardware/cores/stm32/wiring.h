@@ -25,8 +25,8 @@
 #ifndef Wiring_h
 #define Wiring_h
 
-#include <stm32f10x_gpio.h>
-#include <stm32f10x_tim.h>
+//#include <stm32f10x_gpio.h>
+//#include <stm32f10x_tim.h>
 #include <unistd.h>
 #include <stdint.h>
 #include "binary.h"

@@ -25,8 +25,10 @@
 #ifndef Pins_STM32_h
 #define Pins_STM32_h
 
+#if 0
 #include <stm32f10x_map.h>
 #include <stm32f10x_gpio.h>
+#endif
 
 #define NOT_A_PIN 0
 #define NOT_A_PORT 0

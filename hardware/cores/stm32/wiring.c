@@ -31,9 +31,6 @@
 */
 
 #include "wiring_private.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_adc.h"
-#include "stm32f10x_flash.h"
 
 /* Disable interrupts */
 #define DisableInterrups()	__asm("    cpsid	i\n")
@@ -120,36 +117,12 @@ void init()
 	// work there
 	
 	// Configure system clocks
-		// 1. Clocking the controller from internal HSI RC (8 MHz)
-		RCC_HSICmd(ENABLE);
-		// wait until the HSI is ready
-		while(RCC_GetFlagStatus(RCC_FLAG_HSIRDY) == RESET);
-		RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI);
-		// Flash 2 wait state 
-		// *(vu32 *)0x40022000 = 0x12; /* FLASH_ACR */
-		FLASH->ACR = FLASH_Latency_2 | FLASH_PrefetchBuffer_Enable;
-		// 2. Enable ext. high frequency OSC
-		RCC_HSEConfig(RCC_HSE_ON);
-		// wait until the HSE is ready
-		while(RCC_GetFlagStatus(RCC_FLAG_HSERDY) == RESET);
-		// 3. Init PLL
-		RCC_PLLConfig(RCC_PLLSource_HSE_Div1,RCC_PLLMul_9); // PLL = MCK = HCLK = 72MHz
-		RCC_PLLCmd(ENABLE);
-		// wait until the PLL is ready
-		while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
-		// 4. Set system clock divders
-		RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);	// USBCLK = 48MHz
-		RCC_PCLK2Config(RCC_HCLK_Div1);						// PCLK2 = 72MHz
-		RCC_PCLK1Config(RCC_HCLK_Div2);						// PCLK1 = 36MHz
-		RCC_ADCCLKConfig(RCC_PCLK2_Div8);					// ADCCLK = 9MHz
-		RCC_HCLKConfig(RCC_SYSCLK_Div1);
-		// 5. Clock system from PLL
-		RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-	
+	SystemInit ();
+
 	// Enable GPIO port clocks
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);
+    RCC->APB2ENR = RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN | RCC_APB2ENR_AFIOEN;
 	// Enable timer clocks
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2 | RCC_APB1Periph_TIM4, ENABLE);
+    RCC->APB1ENR = RCC_APB1ENR_TIM2EN | RCC_APB1ENR_TIM4EN;
     // Pin configurations and remappings
     /* Disable JTAG functionality */
     AFIO->MAPR = (AFIO->MAPR&~(7<<24))|(4<<24);
@@ -173,10 +146,9 @@ void init()
 	// enable a2d conversions
 
 	/* Start peripherial clock and reset peripherial */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
-	RCC->APB2ENR |= RCC_APB2Periph_ADC1; /* ADC1EN */ /* bit 9 */
-	RCC->APB2RSTR |= RCC_APB2Periph_ADC1; /* ADC1RST */ /* bit 9 */
-	RCC->APB2RSTR &= ~RCC_APB2Periph_ADC1; /* ADC1RST */ /* bit 9 */
+	RCC->APB2ENR = RCC_APB2ENR_ADC1EN; /* ADC1EN */ /* bit 9 */
+	RCC->APB2RSTR |= RCC_APB2RSTR_ADC1RST; /* ADC1RST */ /* bit 9 */
+	RCC->APB2RSTR &= ~RCC_APB2RSTR_ADC1RST; /* ADC1RST */ /* bit 9 */
 
 	/* Configure ADC */
 	/* One channel single conversion mode, no DMA and no IRQ */

@@ -23,7 +23,7 @@
 #include <inttypes.h>
 
 #include "Print.h"
-#include "stm32f10x_map.h"
+#include "stm32f10x.h"
 
 struct ring_buffer;
 

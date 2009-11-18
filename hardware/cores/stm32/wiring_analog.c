@@ -24,8 +24,8 @@
 
 #include "wiring_private.h"
 #include "pins_stm32.h"
-#include "stm32f10x_adc.h"
-#include "stm32f10x_tim.h"
+//#include "stm32f10x_adc.h"
+//#include "stm32f10x_tim.h"
 
 #define ADC_SR_EOC  (1<<1)
 #define ADC_CR1_DISCEN  (1<<11)
@@ -65,7 +65,7 @@ void configTimerChannelPWM(TIM_TypeDef * TIM, uint8_t chn)
 	/* Configure Output Compare */
 	ccmr = *((uint32_t *)(&TIM->CCMR1)+(chn>>1));
 	ccmr &=  ~(0xFF<<(8*(chn&1)));
-	ccmr |= ( (TIM_OCMode_PWM1 | TIM_OCPreload_Enable)<<(8*(chn&1)) );
+	ccmr |= ( (TIM_CCMR_OCMode_PWM1 | TIM_CCMR_OCPreload_Enable)<<(8*(chn&1)) );
 	*((uint32_t *)(&TIM->CCMR1)+(chn>>1)) = ccmr;
 
 	/* Output compare enable */
