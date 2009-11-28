@@ -75,10 +75,10 @@ void  UART4_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler"))
 void  UART5_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
 void  TIM6_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
 void  TIM7_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
-void  DMA2Channel1_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
-void  DMA2Channel2_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
-void  DMA2Channel3_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
-void  DMA2Channel4_5_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
+void  DMA2_Channel1_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
+void  DMA2_Channel2_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
+void  DMA2_Channel3_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
+void  DMA2_Channel4_5_IRQHandler (void) __attribute__ ((weak, alias ("IntDefaultHandler")));
 
 __attribute__ ((section(".vectors")))
 void (* const g_pfnVectors[])(void) =
@@ -154,10 +154,10 @@ void (* const g_pfnVectors[])(void) =
     UART5_IRQHandler,                       //  UART5_IRQHandler,
     TIM6_IRQHandler,                        //  TIM6_IRQHandler,
     TIM7_IRQHandler,                        //  TIM7_IRQHandler,
-    DMA2Channel1_IRQHandler,                //  DMA2Channel1_IRQHandler,
-    DMA2Channel2_IRQHandler,                //  DMA2Channel2_IRQHandler,
-    DMA2Channel3_IRQHandler,                //  DMA2Channel3_IRQHandler,
-    DMA2Channel4_5_IRQHandler               //  DMA2Channel4_5_IRQHandler,
+    DMA2_Channel1_IRQHandler,                //  DMA2Channel1_IRQHandler,
+    DMA2_Channel2_IRQHandler,                //  DMA2Channel2_IRQHandler,
+    DMA2_Channel3_IRQHandler,                //  DMA2Channel3_IRQHandler,
+    DMA2_Channel4_5_IRQHandler               //  DMA2Channel4_5_IRQHandler,
 };
 
 
